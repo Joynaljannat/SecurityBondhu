@@ -1,18 +1,16 @@
 import os
 from flask import Flask, request
 import google.generativeai as genai
-import requests
 app = Flask(__name__)
+# জেমিনি এপিআই কনফিগারেশন
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 model = genai.GenerativeModel("gemini-1.5-flash")
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-CHAT_ID = os.environ.get("CHAT_ID")
 @app.route("/upload", methods=["POST"])
 def upload_image():
-  if "image" not in request.files:
+  # সরাসরি রিকোয়েস্টের বডি থেকে বাইনারি ইমেজ ডেটা নেওয়া
+  image_bytes = request.get_data()
+  if not image_bytes or len(image_bytes) < 100:
     return "No image uploaded", 400
-  image_file = request.files["image"]
-  image_bytes = image_file.read()
   try:
     response = model.generate_content([
         (
@@ -25,11 +23,7 @@ def upload_image():
   except Exception as e:
     return str(e), 500
   if "TRUE" in result:
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-    files = {"photo": ("image.jpg", image_bytes)}
-    data = {"chat_id": CHAT_ID, "caption": "সতর্কবার্তা! মানুষ শনাক্ত হয়েছে।"}
-    requests.post(url, data=data, files=files)
-    return "Alert sent", 200
+    return "ALERT", 200
   else:
     return "Ignored", 200
 if __name__ == "__main__":
