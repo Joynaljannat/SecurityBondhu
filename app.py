@@ -3,7 +3,7 @@ from flask import Flask, request
 import google.generativeai as genai
 app = Flask(__name__)
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-2.0-flash")
+model = genai.GenerativeModel("gemini-3.7-flash")
 @app.route("/upload", methods=["POST"])
 def upload_image():
   image_bytes = request.get_data()
